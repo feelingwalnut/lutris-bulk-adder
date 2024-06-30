@@ -9,7 +9,7 @@ import sqlite3
 from datetime import datetime
 
 DEFAULT_ROM_FILE_EXTS = ['iso', 'zip', 'sfc', 'gba', 'gbc', 'gb', 'md', 'n64',
-                         'nes', '32x', 'gg', 'sms', 'bin']
+                         'nes', '32x', 'gg', 'sms', 'bin', 'chd']
 PLATFORMS = [
     '3DO',
     'Amstrad CPC',
@@ -113,7 +113,7 @@ def directory(path):
 
 
 def scan_for_filetypes(dir, types):
-    """Scans a directory for all files matching a list of extension types.
+    """Scans a directory recursively for all files matching a list of extension types.
 
     Args:
         dir: Directory location to scan.
@@ -127,15 +127,14 @@ def scan_for_filetypes(dir, types):
     """
 
     files = set()
-    with os.scandir(dir) as it:
-        for entity in it:
-            if entity.is_file():
-                fn_delimited = entity.name.split(os.extsep)
-                try:
-                    if(fn_delimited[len(fn_delimited) - 1].lower() in types):
-                        files.add(os.path.join(dir, entity.name))
-                except IndexError:
-                    pass
+    for root, _, filenames in os.walk(dir):
+        for filename in filenames:
+            fn_delimited = filename.split(os.extsep)
+            try:
+                if fn_delimited[len(fn_delimited) - 1].lower() in types:
+                    files.add(os.path.join(root, filename))
+            except IndexError:
+                pass
     return files
 
 
